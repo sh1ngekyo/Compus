@@ -1,4 +1,4 @@
-namespace Compus.Web.API;
+namespace BlazorApp1.Data;
 
 public class WeatherForecast
 {
