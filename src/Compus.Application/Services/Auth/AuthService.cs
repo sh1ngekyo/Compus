@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions;
+using Compus.Application.Abstractions;
 using Compus.Domain.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,11 +11,11 @@ namespace Application.Services.Auth;
 public class AuthService : IAuthService
 {
     private readonly ServerConfig _shellConfiguration;
-    private readonly HttpContext _httpContext;
-    public bool Authenticated => _httpContext.User.Identity!.IsAuthenticated;
+    private readonly IHttpContextWrapper _httpContextWrapper;
+    public bool Authenticated => _httpContextWrapper.IsAuthenticated();
 
-    public AuthService(IHttpContextAccessor httpContextAccessor, ServerConfig shellConfiguration)
-        => (_shellConfiguration, _httpContext) = (shellConfiguration, httpContextAccessor.HttpContext);
+    public AuthService(IHttpContextWrapper httpContextWrapper, ServerConfig shellConfiguration)
+        => (_shellConfiguration, _httpContextWrapper) = (shellConfiguration, httpContextWrapper);
 
     private bool VerifyCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession)
         => !string.IsNullOrWhiteSpace(receivedCaptcha)
@@ -53,10 +54,10 @@ public class AuthService : IAuthService
             return false;
         }
         var authInfo = CreateAuthInfo(user, persist);
-        await _httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authInfo.Principal, authInfo.Properties);
+        await _httpContextWrapper.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authInfo.Principal, authInfo.Properties);
         return true;
     }
 
     public async Task SignOutAsync() 
-        => await _httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        => await _httpContextWrapper.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 }
