@@ -2,7 +2,7 @@
 
 namespace Compus.Domain.Client;
 
-public class ActiveSession
+public class ExternalActiveSession
 {
     public ClientStoredSession? StoredSession { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid();

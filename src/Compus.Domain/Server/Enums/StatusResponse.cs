@@ -1,6 +1,6 @@
 ﻿namespace Compus.Domain.Server.Enums;
 
-public enum StausResponse
+public enum StatusResponse
 {
     Successful,
     Failed,
