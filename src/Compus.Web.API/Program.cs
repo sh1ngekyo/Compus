@@ -1,25 +1,6 @@
-var builder = WebApplication.CreateBuilder(args);
+﻿using Compus.Web.API;
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+    webBuilder.UseStartup<Startup>();
+}).Build().Run();
