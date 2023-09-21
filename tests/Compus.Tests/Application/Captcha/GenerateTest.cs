@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Compus.Application.Abstractions;
-using Compus.Application.Services.Captcha;
+﻿using Compus.Application.Services.Captcha;
 using SixLabors.ImageSharp;
 
 namespace Compus.Tests.Application.Captcha;
