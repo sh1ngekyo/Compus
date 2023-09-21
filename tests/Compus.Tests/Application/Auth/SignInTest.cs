@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Services.Auth;
+﻿using System.Security.Claims;
 using Compus.Application.Abstractions;
+using Compus.Application.Services.Auth;
 using Compus.Domain.Server;
 using Microsoft.AspNetCore.Authentication;
 using NSubstitute;

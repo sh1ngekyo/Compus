@@ -1,12 +1,10 @@
-﻿using Application.Abstractions;
-using Compus.Application.Abstractions;
+﻿using Compus.Application.Abstractions;
 using Compus.Domain.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace Application.Services.Auth;
+namespace Compus.Application.Services.Auth;
 
 public class AuthService : IAuthService
 {

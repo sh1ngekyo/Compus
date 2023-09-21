@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Services.Auth;
-using Compus.Application.Abstractions;
+﻿using Compus.Application.Abstractions;
+using Compus.Application.Services.Auth;
 using Compus.Domain.Server;
-using Microsoft.AspNetCore.Http;
 
 namespace Compus.Tests.Application.Auth;
 

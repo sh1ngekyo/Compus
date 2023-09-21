@@ -1,4 +1,4 @@
-﻿namespace Application.Abstractions;
+﻿namespace Compus.Application.Abstractions;
 
 public interface IAuthService
 {
