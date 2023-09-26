@@ -1,0 +1,93 @@
+﻿@page "/Connect"
+
+@using Compus.Domain.Client;
+@using Compus.Domain.Server.Enums;
+@using Compus.Domain.Server;
+
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid page-body-wrapper full-page-wrapper">
+    <div class="row w-100 m-0">
+        <div class="content-wrapper full-page-wrapper d-flex align-items-center auth">
+            <div class="card col-lg-12 mx-auto">
+                <div class="card-body px-5 py-5">
+                    <h3 class="card-title text-left mb-3">Connect to server - @StoredSession.DisplayName</h3>
+                    <div class="form-group">
+                        <label for="RemoteHost">Host Address</label>
+                        <input type="text" class="form-control text-white" autocomplete="off" id="RemoteHost" @bind-value="@StoredSession.Host">
+                    </div>
+                    <div class="form-group">
+                        <label for="Port">Port</label>
+                        <input type="number" class="form-control text-white" autocomplete="off" id="Port" @bind-value="@StoredSession.Port">
+                    </div>
+                    <div class="form-group">
+                        <label for="ServerUserName">User Name</label>
+                        <input type="text" class="form-control text-white" id="ServerUserName" autocomplete="off" @bind-value="@StoredSession.UserName">
+                    </div>
+                    <div class="form-group">
+                        <label for="ServerPassword">Password</label>
+                        <input type="password" class="form-control text-white" id="ServerPassword" autocomplete="new-password" @bind-value="@StoredSession.DecryptedPassword">
+                    </div>
+                    @if (!string.IsNullOrEmpty(Status))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @Status
+                        </div>
+                    }
+                    <button type="button" class="btn btn-primary btn-block enter-btn" @onclick="Connected">Connect</button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+
+    ExternalStoredSession _storedSession = ClientUtilities.StoredSession ?? new ExternalStoredSession { DisplayName = "Temporary Server" };
+
+    public ExternalStoredSession StoredSession => _storedSession;
+
+    public string? Status { get; set; }
+
+    async void Connected()
+    {
+        try
+        {
+            var activeSession = new ExternalActiveSession
+            {
+                StoredSession = StoredSession
+            };
+
+            var content = await Http.PostAsJsonAsync("/api/Terminal/Connect", activeSession);
+            if (content.IsSuccessStatusCode)
+            {
+                var result = await content.Content.ReadFromJsonAsync<ApiResponse<ExternalActiveSession>>();
+
+                if (result!.StatusResult == ResponseStatus.Success)
+                {
+                    ClientUtilities.StoredSession = null;
+                    NavManager.NavigateTo("/Terminal/" + result.Response!.ConnectionId);
+                }
+                else
+                {
+                    Status = result.ExtraMessage;
+                }
+            }
+            else
+            {
+                Status = "Not Authorized";
+                await JSRuntime.InvokeVoidAsync("ShowNotLogin", Status);
+                NavManager.NavigateTo("/Auth");
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = ex.Message;
+        }
+
+        StateHasChanged();
+    }
+}
