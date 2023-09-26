@@ -4,10 +4,14 @@ namespace Compus.Domain.Client;
 
 public class ExternalActiveSession
 {
-    public ClientStoredSession? StoredSession { get; set; }
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public ExternalStoredSession? StoredSession { get; set; }
+
+    public Guid ConnectionId { get; set; } = Guid.NewGuid();
+
     public string? Status { get; set; }
+
     [JsonIgnore]
-    public string? Output { get; set; }
+    public string? OutputStr { get; set; }
+
     public DateTime StartSessionDate { get; set; }
 }

@@ -2,21 +2,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compus.Domain", "src\Compus.Domain\Compus.Domain.csproj", "{36229DEE-4AB8-4B53-8A06-EBBDEC9F0ABB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compus.Tests", "tests\Compus.Tests\Compus.Tests.csproj", "{9F881AFA-EC03-4DC5-BD22-F942EBEA1A78}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2F74390E-AAB7-4AA6-992A-9EA9A2376E75}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compus.Application", "src\Compus.Application\Compus.Application.csproj", "{F7C054AA-9DD8-40EC-A36F-CF89BF899FB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compus.Domain", "src\Compus.Domain\Compus.Domain.csproj", "{36229DEE-4AB8-4B53-8A06-EBBDEC9F0ABB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compus.Web.API", "src\Compus.Web.API\Compus.Web.API.csproj", "{A7DA34E9-CA42-4EB7-884D-C72F1D9FC80B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compus.Application", "src\Compus.Application\Compus.Application.csproj", "{F7C054AA-9DD8-40EC-A36F-CF89BF899FB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compus.Web.Client", "src\Compus.Web.Client\Compus.Web.Client.csproj", "{B844D596-1704-4CA1-9923-E9A77C3F7180}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compus.Tests", "tests\Compus.Tests\Compus.Tests.csproj", "{9F881AFA-EC03-4DC5-BD22-F942EBEA1A78}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compus.Web.API", "src\Compus.Web\API\Compus.Web.API.csproj", "{5760A4AE-3EB4-4391-9DFC-2F0EE9B9567C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,14 +34,14 @@ Global
 		{F7C054AA-9DD8-40EC-A36F-CF89BF899FB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7C054AA-9DD8-40EC-A36F-CF89BF899FB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7C054AA-9DD8-40EC-A36F-CF89BF899FB1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7DA34E9-CA42-4EB7-884D-C72F1D9FC80B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7DA34E9-CA42-4EB7-884D-C72F1D9FC80B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7DA34E9-CA42-4EB7-884D-C72F1D9FC80B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7DA34E9-CA42-4EB7-884D-C72F1D9FC80B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B844D596-1704-4CA1-9923-E9A77C3F7180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B844D596-1704-4CA1-9923-E9A77C3F7180}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B844D596-1704-4CA1-9923-E9A77C3F7180}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B844D596-1704-4CA1-9923-E9A77C3F7180}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B62CCE5-7DC7-4B0D-B667-FEDEBC238BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B62CCE5-7DC7-4B0D-B667-FEDEBC238BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B62CCE5-7DC7-4B0D-B667-FEDEBC238BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B62CCE5-7DC7-4B0D-B667-FEDEBC238BD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5760A4AE-3EB4-4391-9DFC-2F0EE9B9567C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5760A4AE-3EB4-4391-9DFC-2F0EE9B9567C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5760A4AE-3EB4-4391-9DFC-2F0EE9B9567C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5760A4AE-3EB4-4391-9DFC-2F0EE9B9567C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,7 +4,7 @@ namespace Compus.Domain.Server;
 
 public class ApiResponse<T>
 {
-    public StatusResponse StausResult { get; set; }
+    public ResponseStatus StatusResult { get; set; }
     public string? ExtraMessage { get; set; }
     public T? Response { get; set; }
 }

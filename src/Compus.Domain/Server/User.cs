@@ -1,4 +1,5 @@
 ﻿namespace Compus.Domain.Server;
+
 public class User
 {
     public int Id { get; set; }

@@ -1,5 +1,4 @@
 ﻿using Compus.Application.Abstractions;
-using Compus.Application.Utils.Terminal;
 using Compus.Domain.Client;
 using Compus.Domain.Server;
 using Compus.Domain.Server.Enums;
@@ -8,52 +7,62 @@ namespace Compus.Application.Services.Terminal;
 
 public class TerminalService : ITerminalService
 {
-    private readonly ISessionManager? _sessionManager;
+    private readonly ConnectionManager? _shellpool;
 
-    public TerminalService(ISessionManager sessionManager)
-        => _sessionManager = sessionManager;
+    public TerminalService(ConnectionManager shellpool)
+        => _shellpool = shellpool;
+
+    private ApiResponse<T> CreateResponse<T>() => new ApiResponse<T>
+    {
+        StatusResult = ResponseStatus.Success
+    };
 
     public ApiResponse<ExternalActiveSession> Connect(ExternalActiveSession activeSessionModel, string storageId)
     {
-        var response = new ApiResponse<ExternalActiveSession>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<ExternalActiveSession>();
 
         try
         {
-            _sessionManager!.CreateSession(storageId, activeSessionModel);
-            response.Response = new ExternalActiveSession
+            if (activeSessionModel.StoredSession != null)
             {
-                StartSessionDate = DateTime.Now,
-                Status = "Connected Successful",
-                StoredSession = activeSessionModel.StoredSession,
-                Id = activeSessionModel.Id
-            };
+                _shellpool!.AddConnection(storageId, activeSessionModel);
+
+                response.Response = new ExternalActiveSession
+                {
+                    StartSessionDate = DateTime.Now,
+                    Status = "Connected Successful",
+                    StoredSession = activeSessionModel.StoredSession,
+                    ConnectionId = activeSessionModel.ConnectionId
+                };
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
-
         return response;
     }
 
     public ApiResponse<bool> Disconnect(Guid sessionId, string storageId)
     {
-        var response = new ApiResponse<bool>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<bool>();
 
         try
         {
-            response.Response = _sessionManager!.Disconnect(storageId, sessionId);
+            if (string.IsNullOrEmpty(storageId))
+            {
+                response.StatusResult = ResponseStatus.Fail;
+                response.ExtraMessage = "No active sessions";
+            }
+            else
+            {
+                response.Response = _shellpool!.Disconnect(storageId, sessionId);
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -62,19 +71,24 @@ public class TerminalService : ITerminalService
 
     public ApiResponse<bool> ExecuteCommand(Guid sessionId, string storageId, string command)
     {
-        var response = new ApiResponse<bool>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<bool>();
 
         try
         {
-            _sessionManager!.SendCommand(storageId, sessionId, command);
-            response.Response = true;
+            if (string.IsNullOrEmpty(storageId))
+            {
+                response.StatusResult = ResponseStatus.Fail;
+                response.ExtraMessage = "No active sessions";
+            }
+            else
+            {
+                _shellpool!.ExecuteCommand(storageId, sessionId, command);
+                response.Response = true;
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -83,38 +97,47 @@ public class TerminalService : ITerminalService
 
     public ApiResponse<List<ExternalActiveSession>> GetAllConnectedSessions(string storageId)
     {
-        var response = new ApiResponse<List<ExternalActiveSession>>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<List<ExternalActiveSession>>();
 
         try
         {
-            response.Response = _sessionManager!.Refresh(storageId);
+            if (string.IsNullOrEmpty(storageId))
+            {
+                response.Response = new List<ExternalActiveSession>();
+            }
+            else
+            {
+                response.Response = _shellpool!.FlushStorage(storageId);
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
         return response;
     }
 
-    public ApiResponse<TerminalOutput> GetView(Guid sessionId, string storageId)
+    public ApiResponse<TerminalContent> GetView(Guid sessionId, string storageId)
     {
-        var response = new ApiResponse<TerminalOutput>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<TerminalContent>();
 
         try
         {
-            response.Response = _sessionManager!.GetTerminalOutput(storageId, sessionId);
+            if (string.IsNullOrEmpty(storageId))
+            {
+                response.StatusResult = ResponseStatus.Fail;
+                response.ExtraMessage = "No active sessions";
+            }
+            else
+            {
+                response.Response = _shellpool!.GetTerminalOutput(storageId, sessionId);
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -123,18 +146,23 @@ public class TerminalService : ITerminalService
 
     public ApiResponse<bool> IsConnected(Guid sessionId, string storageId)
     {
-        var response = new ApiResponse<bool>
-        {
-            StausResult = StatusResponse.Successful
-        };
+        var response = CreateResponse<bool>();
 
         try
         {
-            response.Response = _sessionManager!.IsConnected(storageId, sessionId);
+            if (string.IsNullOrEmpty(storageId))
+            {
+                response.StatusResult = ResponseStatus.Fail;
+                response.ExtraMessage = "No active sessions";
+            }
+            else
+            {
+                response.Response = _shellpool!.IsConnected(storageId, sessionId);
+            }
         }
         catch (Exception ex)
         {
-            response.StausResult = StatusResponse.Exception;
+            response.StatusResult = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 

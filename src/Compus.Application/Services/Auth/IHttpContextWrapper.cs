@@ -7,9 +7,9 @@ namespace Compus.Application.Services.Auth;
 
 public class HttpContextWrapper : IHttpContextWrapper
 {
-    private readonly HttpContextAccessor _contextAccessor;
+    private readonly IHttpContextAccessor _contextAccessor;
 
-    public HttpContextWrapper(HttpContextAccessor contextAccessor) => _contextAccessor = contextAccessor;
+    public HttpContextWrapper(IHttpContextAccessor contextAccessor) => _contextAccessor = contextAccessor;
 
     public bool IsAuthenticated() => _contextAccessor.HttpContext.User.Identity!.IsAuthenticated;
 
