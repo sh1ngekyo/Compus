@@ -2,7 +2,7 @@
 
 public interface IAuthService
 {
-    public bool Authenticated { get; }
+    public bool Authorized { get; }
 
     public bool ValidateCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession);
 

@@ -8,19 +8,19 @@ namespace Compus.Application.Services.Auth;
 
 public class AuthService : IAuthService
 {
-    private readonly ServerConfig _shellConfiguration;
+    private readonly ServerConfig _cfg;
     private readonly IHttpContextWrapper _httpContextWrapper;
-    public bool Authenticated => _httpContextWrapper.IsAuthenticated();
+    public bool Authorized => _httpContextWrapper.IsAuthenticated();
 
     public AuthService(IHttpContextWrapper httpContextWrapper, ServerConfig shellConfiguration)
-        => (_shellConfiguration, _httpContextWrapper) = (shellConfiguration, httpContextWrapper);
+        => (_cfg, _httpContextWrapper) = (shellConfiguration, httpContextWrapper);
 
     private bool VerifyCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession)
         => !string.IsNullOrWhiteSpace(receivedCaptcha)
         && validCaptchaForCurrentSession == receivedCaptcha.ToLowerInvariant();
 
     public bool ValidateCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession) 
-        => !_shellConfiguration.EnableAuthorization || VerifyCaptcha(receivedCaptcha, validCaptchaForCurrentSession);
+        => !_cfg.EnableAuthorization || VerifyCaptcha(receivedCaptcha, validCaptchaForCurrentSession);
 
     private (ClaimsPrincipal Principal, AuthenticationProperties Properties) CreateAuthInfo(User user, bool persist)
     {
@@ -45,7 +45,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> SignInAsync(string username, string password, bool persist)
     {
-        var user = _shellConfiguration.Users!.FirstOrDefault(u => !_shellConfiguration.EnableAuthorization || (u.UserName == username && u.Password == password));
+        var user = _cfg.Users!.FirstOrDefault(u => !_cfg.EnableAuthorization || (u.UserName == username && u.Password == password));
 
         if (user == null)
         {

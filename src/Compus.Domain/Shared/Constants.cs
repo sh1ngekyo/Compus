@@ -6,9 +6,9 @@ public static class Constants
 
     public const int MaxinumLines = 1000;
 
-    public const int MaxinumQueueCount = 10000;
+    public const int MaxinumQueueCount = 10_000;
 
-    public const int MaxinumOutputLength = 100000;
+    public const int MaxinumOutputLength = 100_000;
 
-    public const string NewLineForShell = "\r\n";
+    public const string NewLine = "\r\n";
 }
