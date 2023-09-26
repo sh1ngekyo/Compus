@@ -1,0 +1,58 @@
+﻿@inherits LayoutComponentBase
+
+@implements IAsyncDisposable
+
+@inject IJSRuntime JS
+@inject NavigationManager Navigator
+
+<div class="container-scroller">
+    <NavMenu />
+    <HeaderLayout />
+    <div class="container-fluid page-body-wrapper">
+        <div class="main-panel">
+            <div class="content-wrapper">
+                <div class="row">
+                    @Body
+                </div>
+            </div>
+            <FooterLayout />
+        </div>
+    </div>
+</div>
+
+@inject IJSRuntime JS
+@code {
+    private List<IJSObjectReference>? _jsModules;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsModules = new List<IJSObjectReference>();
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/vendors/progressbar.js/progressbar.min.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/vendors/jvectormap/jquery-jvectormap.min.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/vendors/owl-carousel-2/owl.carousel.min.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/off-canvas.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/hoverable-collapse.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/misc.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/settings.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/todolist.js"));
+            _jsModules.Add(await JS.InvokeAsync<IJSObjectReference>("import", $"{Navigator.BaseUri}assets/js/dashboard.js"));
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_jsModules is not null)
+        {
+            foreach (var module in _jsModules)
+            {
+                if (module is not null)
+                {
+                    await module.DisposeAsync();
+                }
+            }
+        }
+    }
+}

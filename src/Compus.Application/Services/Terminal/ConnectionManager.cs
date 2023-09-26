@@ -24,7 +24,7 @@ public class ConnectionManager
            {
                while (true)
                {
-                   Task.Delay(_sessionManagementDelayMs);
+                   Thread.Sleep(_sessionManagementDelayMs);
                    RemoveExpiredSessions();
                }
            });
