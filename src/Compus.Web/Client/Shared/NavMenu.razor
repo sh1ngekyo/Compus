@@ -1,0 +1,46 @@
+﻿<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="/"><img src="assets/images/logo.svg" alt="logo" /></a>
+        <a class="sidebar-brand brand-logo-mini" href="/"><img src="assets/images/logo-mini.svg" alt="logo" /></a>
+    </div>
+    <ul class="nav">
+        <li class="nav-item nav-category">
+            <span class="nav-link"> Navigation</span>
+        </li>
+        <li class="nav-item menu-items">
+            <NavLink class="nav-link" href="auth">
+                <span class="menu-icon">
+                    <i class="mdi mdi-login-variant"></i>
+                </span>
+                <span class="menu-title"> Auth</span>
+            </NavLink>
+        </li>
+        <li class="nav-item menu-items">
+            <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+                <span class="menu-icon">
+                    <i class="mdi mdi-ssh"></i>
+                </span>
+                <span class="menu-title"> Connection</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="ui-basic">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="sessions"> Sessions</NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="connect"> New Connection</NavLink>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item menu-items">
+            <NavLink class="nav-link" href="/">
+                <span class="menu-icon">
+                    <i class="mdi mdi-laptop"></i>
+                </span>
+                <span class="menu-title"> FAQ</span>
+            </NavLink>
+        </li>
+    </ul>
+</nav>
