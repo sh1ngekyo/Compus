@@ -10,8 +10,5 @@ public class ExternalActiveSession
 
     public string? Status { get; set; }
 
-    [JsonIgnore]
-    public string? OutputStr { get; set; }
-
     public DateTime StartSessionDate { get; set; }
 }

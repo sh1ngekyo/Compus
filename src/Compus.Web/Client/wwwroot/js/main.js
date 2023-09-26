@@ -3,7 +3,7 @@
     textarea.scrollTop = textarea.scrollHeight;
 }
 
-function ShowNotLogin(message) {
+function Alert(message) {
     alert(message);
 }
 

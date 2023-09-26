@@ -46,7 +46,7 @@
 
 @code{
 
-    ExternalStoredSession _storedSession = ClientUtilities.StoredSession ?? new ExternalStoredSession { DisplayName = "Temporary Server" };
+    ExternalStoredSession _storedSession = TerminalUtilities.StoredSession ?? new ExternalStoredSession { DisplayName = "Temporary Server" };
 
     public ExternalStoredSession StoredSession => _storedSession;
 
@@ -68,7 +68,7 @@
 
                 if (result!.StatusResult == ResponseStatus.Success)
                 {
-                    ClientUtilities.StoredSession = null;
+                    TerminalUtilities.StoredSession = null;
                     NavManager.NavigateTo("/Terminal/" + result.Response!.ConnectionId);
                 }
                 else
@@ -79,7 +79,7 @@
             else
             {
                 Status = "Not Authorized";
-                await JSRuntime.InvokeVoidAsync("ShowNotLogin", Status);
+                await JSRuntime.InvokeVoidAsync("Alert", Status);
                 NavManager.NavigateTo("/Auth");
             }
         }
