@@ -7,10 +7,10 @@ namespace Compus.Application.Services.Terminal;
 
 public class TerminalService : ITerminalService
 {
-    private readonly ConnectionManager? _shellpool;
+    private readonly ConnectionManager? _connectionManager;
 
-    public TerminalService(ConnectionManager shellpool)
-        => _shellpool = shellpool;
+    public TerminalService(ConnectionManager connectionManager)
+        => _connectionManager = connectionManager;
 
     private ApiResponse<T> CreateResponse<T>() => new ApiResponse<T>
     {
@@ -25,7 +25,7 @@ public class TerminalService : ITerminalService
         {
             if (activeSessionModel.StoredSession != null)
             {
-                _shellpool!.AddConnection(storageId, activeSessionModel);
+                _connectionManager!.AddConnection(storageId, activeSessionModel);
 
                 response.Response = new ExternalActiveSession
                 {
@@ -57,7 +57,7 @@ public class TerminalService : ITerminalService
             }
             else
             {
-                response.Response = _shellpool!.Disconnect(storageId, sessionId);
+                response.Response = _connectionManager!.Disconnect(storageId, sessionId);
             }
         }
         catch (Exception ex)
@@ -82,7 +82,7 @@ public class TerminalService : ITerminalService
             }
             else
             {
-                _shellpool!.ExecuteCommand(storageId, sessionId, command);
+                _connectionManager!.ExecuteCommand(storageId, sessionId, command);
                 response.Response = true;
             }
         }
@@ -107,7 +107,7 @@ public class TerminalService : ITerminalService
             }
             else
             {
-                response.Response = _shellpool!.FlushStorage(storageId);
+                response.Response = _connectionManager!.FlushStorage(storageId);
             }
         }
         catch (Exception ex)
@@ -132,7 +132,7 @@ public class TerminalService : ITerminalService
             }
             else
             {
-                response.Response = _shellpool!.GetTerminalOutput(storageId, sessionId);
+                response.Response = _connectionManager!.GetTerminalOutput(storageId, sessionId);
             }
         }
         catch (Exception ex)
@@ -157,7 +157,7 @@ public class TerminalService : ITerminalService
             }
             else
             {
-                response.Response = _shellpool!.IsConnected(storageId, sessionId);
+                response.Response = _connectionManager!.IsConnected(storageId, sessionId);
             }
         }
         catch (Exception ex)

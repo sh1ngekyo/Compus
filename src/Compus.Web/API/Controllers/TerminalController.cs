@@ -20,7 +20,7 @@ namespace Compus.Web.API.Controllers
         }
 
         [HttpPost]
-        public ApiResponse<ExternalActiveSession> Connect(ExternalActiveSession activeSessionModel)
+        public ApiResponse<ExternalActiveSession> Connect(ExternalActiveSession session)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
             if (string.IsNullOrEmpty(storageId))
@@ -28,25 +28,25 @@ namespace Compus.Web.API.Controllers
                 storageId = Guid.NewGuid().ToString();
                 HttpContext.Session.SetString(Constants.ClientSessionIdName, storageId);
             }
-            return _terminalService.Connect(activeSessionModel, storageId);
+            return _terminalService.Connect(session, storageId);
         }
 
-        public ApiResponse<bool> ExecuteCommand(Guid uniqueId, string command)
+        public ApiResponse<bool> ExecuteCommand(Guid terminalId, string command)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.ExecuteCommand(uniqueId, storageId!, command);
+            return _terminalService.ExecuteCommand(terminalId, storageId!, command);
         }
 
-        public ApiResponse<TerminalContent> GetView(Guid uniqueId)
+        public ApiResponse<TerminalContent> GetView(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.GetView(uniqueId, storageId!);
+            return _terminalService.GetView(terminalId, storageId!);
         }
 
-        public ApiResponse<bool> IsConnected(Guid uniqueId)
+        public ApiResponse<bool> IsConnected(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.IsConnected(uniqueId, storageId!);
+            return _terminalService.IsConnected(terminalId, storageId!);
         }
 
         public ApiResponse<bool> Disconnect(Guid uniqueId)
