@@ -169,7 +169,7 @@
 
         if (response!.Status == ResponseStatus.Success)
         {
-            TerminalUtilities.SessionStorage.RemoveActiveSessions();
+            TerminalUtilities.SessionStorage.ClearSessions();
 
             foreach (var activeSession in response.Result!)
             {

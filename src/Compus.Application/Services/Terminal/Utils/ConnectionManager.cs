@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using Compus.Application.Exceptions;
 using Compus.Application.Extensions;
 using Compus.Domain.Client;
 using Compus.Domain.Server;
@@ -7,29 +8,39 @@ using Compus.Domain.Shared;
 
 namespace Compus.Application.Services.Terminal.Utils;
 
+/// <summary>
+/// Background worker for connection managment
+/// </summary>
 public class ConnectionManager
 {
     private static ConcurrentDictionary<string, InternalSessionStorage> ConnectionPool { get; set; } = new();
     private readonly ServerConfig _config;
-    private const int SessionManagementDelayMs = 120 * 1000;
+
+    /// <summary>
+    /// Expired connection check interval in ms
+    /// </summary>
+    private const int ConnectionCheckIntervalMs = 120 * 1000;
     private const string ControlCommand = "ctrl + ";
 
     public ConnectionManager(ServerConfig config)
     {
         _config = config;
-        StartSessionManagement();
+        StartConnectionChecking();
     }
 
-    private void StartSessionManagement()
+    private void StartConnectionChecking()
         => Task.Run(() =>
            {
                while (true)
                {
-                   Thread.Sleep(SessionManagementDelayMs);
+                   Thread.Sleep(ConnectionCheckIntervalMs);
                    RemoveExpiredSessions();
                }
            });
 
+    /// <summary>
+    /// Remove all expired session for all authorized users
+    /// </summary>
     private void RemoveExpiredSessions()
     {
         foreach (var sessionStorage in ConnectionPool.ToArray())
@@ -46,6 +57,9 @@ public class ConnectionManager
         }
     }
 
+    /// <summary>
+    /// Get session from storage
+    /// </summary>
     private bool TryGetSessionByStorageId(string storageId, Guid sessionId, out InternalActiveSession session)
     {
         session = null!;
@@ -53,7 +67,10 @@ public class ConnectionManager
                storage.Sessions.TryGetValue(sessionId, out session!);
     }
 
-    public void AddConnection(string storageId, ExternalActiveSession activeSessionModel)
+    /// <summary>
+    /// Add connection to pool and connect to remote terminal
+    /// </summary>
+    public void AddConnection(string storageId, ExternalActiveSession session)
     {
         if (!ConnectionPool.TryGetValue(storageId, out var sessionsModel))
         {
@@ -61,9 +78,16 @@ public class ConnectionManager
             ConnectionPool.TryAdd(storageId, sessionsModel);
         }
 
-        sessionsModel.Connect(activeSessionModel, _config);
+        sessionsModel.Connect(session, _config);
     }
 
+    /// <summary>
+    /// Send command to remote terminal
+    /// </summary>
+    /// <param name="command">Command to send</param>
+    /// <param name="sessionId">Session Id</param>
+    /// <param name="storageId">Id for current session's storage</param>
+    /// <exception cref="NoСonnectedTerminalAvailableException"></exception>
     public void ExecuteCommand(string storageId, Guid sessionId, string command)
     {
         if (TryGetSessionByStorageId(storageId, sessionId, out var session))
@@ -80,9 +104,16 @@ public class ConnectionManager
             session.ShellStream!.WriteLine(command);
             return;
         }
-        throw new Exception("No available terminal connected");
+        throw new NoСonnectedTerminalAvailableException(sessionId.ToString(), storageId);
     }
 
+    /// <summary>
+    /// Get terminal viewport data
+    /// </summary>
+    /// <param name="sessionId">Session Id</param>
+    /// <param name="storageId">Id for current session's storage</param>
+    /// <exception cref="NoСonnectedTerminalAvailableException"></exception>
+    /// <returns>Terminal viewport data from remote server</returns>
     public TerminalContent GetTerminalOutput(string storageId, Guid sessionId)
     {
         if (TryGetSessionByStorageId(storageId, sessionId, out var session))
@@ -100,18 +131,30 @@ public class ConnectionManager
                 Lines = totalLines
             };
         }
-        throw new Exception("No available terminal connected");
+        throw new NoСonnectedTerminalAvailableException(sessionId.ToString(), storageId);
     }
 
+    /// <summary>
+    /// Get connection status for current session
+    /// </summary>
+    /// <param name="sessionId">Session Id</param>
+    /// <param name="storageId">Id for current session's storage</param>
+    /// <exception cref="NoСonnectedTerminalAvailableException"></exception>
     public bool IsConnected(string storageId, Guid sessionId)
     {
         if (TryGetSessionByStorageId(storageId, sessionId, out var session))
         {
             return session.SshClient!.IsConnected;
         }
-        throw new Exception("No available terminal connected");
+        throw new NoСonnectedTerminalAvailableException(sessionId.ToString(), storageId);
     }
 
+    /// <summary>
+    /// Disconnect from remote terminal
+    /// </summary>
+    /// <param name="sessionId">Session Id</param>
+    /// <param name="storageId">Id for current session's storage</param>
+    /// <exception cref="NoСonnectedTerminalAvailableException"></exception>
     public bool Disconnect(string storageId, Guid sessionId)
     {
         if (ConnectionPool.TryGetValue(storageId, out var storage))
@@ -120,9 +163,14 @@ public class ConnectionManager
 
             return true;
         }
-        throw new Exception("No available terminal connected");
+        throw new NoСonnectedTerminalAvailableException(sessionId.ToString(), storageId);
     }
 
+    /// <summary>
+    /// Flush connection pool
+    /// </summary>
+    /// <param name="storageId">Id for current session's storage</param>
+    /// <returns>List with connected sessions</returns>
     public List<ExternalActiveSession> FlushStorage(string storageId)
     {
         if (ConnectionPool.TryGetValue(storageId, out var storage))

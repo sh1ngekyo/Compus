@@ -7,6 +7,12 @@ namespace Compus.Application.Extensions;
 
 internal static class UserExtension
 {
+    /// <summary>
+    /// Create ClaimsPrincipal and AuthenticationProperties for current user
+    /// </summary>
+    /// <param name="user">User</param>
+    /// <param name="persist">Remember user</param>
+    /// <returns>ClaimsPrincipal and AuthenticationProperties</returns>
     internal static (ClaimsPrincipal Principal, AuthenticationProperties Properties) GetAuthProperties(this User user, bool persist = false)
     {
         var claims = new[]

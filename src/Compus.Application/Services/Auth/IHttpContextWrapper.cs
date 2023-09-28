@@ -11,7 +11,7 @@ public class HttpContextWrapper : IHttpContextWrapper
 
     public HttpContextWrapper(IHttpContextAccessor contextAccessor) => _contextAccessor = contextAccessor;
 
-    public bool IsAuthenticated() => _contextAccessor.HttpContext.User.Identity!.IsAuthenticated;
+    public bool IsAuthorized() => _contextAccessor.HttpContext.User.Identity!.IsAuthenticated;
 
     public async Task SignInAsync(string scheme, ClaimsPrincipal claimsPrincipal, AuthenticationProperties properties) 
         => await _contextAccessor.HttpContext.SignInAsync(scheme, claimsPrincipal, properties);

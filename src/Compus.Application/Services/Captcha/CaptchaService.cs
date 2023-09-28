@@ -11,6 +11,9 @@ public class CaptchaService : ICaptchaService
     private const string Numbers = "23456789";
     private const string Alphabet = "ABCDEFGHJKLMNPQRTUVWXYZ";
 
+    /// <summary>
+    /// Glitches on the output image
+    /// </summary>
     private readonly (int Min, int Max) _glitchesCount = (3, 5);
     private readonly Random _random = new();
 

@@ -1,9 +1,19 @@
 ﻿namespace Compus.Domain.Client;
 
+/// <summary>
+/// Client side stored session (Local storage)
+/// </summary>
 public class ExternalStoredSessionStorage
 {
+    /// <summary>
+    /// List of stored sessions
+    /// </summary>
     public List<ExternalStoredSession> Sessions { get; set; } = new();
 
+    /// <summary>
+    /// Save session to storage
+    /// </summary>
+    /// <param name="session">Session for update or add</param>
     public void RenewStoredSession(ExternalStoredSession session)
     {
         var exist = Sessions.FirstOrDefault(u => u.ConnectionId == session.ConnectionId);
@@ -19,6 +29,10 @@ public class ExternalStoredSessionStorage
         }
     }
 
+    /// <summary>
+    /// Remove session from storage
+    /// </summary>
+    /// <param name="sessionId">Session Id for delete</param>
     public void RemoveStoredSession(Guid sessionId)
     {
         var session = Sessions.FirstOrDefault(u => u.ConnectionId == sessionId);

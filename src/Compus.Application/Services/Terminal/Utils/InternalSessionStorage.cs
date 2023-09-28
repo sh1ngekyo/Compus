@@ -8,6 +8,9 @@ using Renci.SshNet.Common;
 
 namespace Compus.Application.Services.Terminal.Utils;
 
+/// <summary>
+/// Internal session storage for connection manager
+/// </summary>
 public class InternalSessionStorage
 {
     private const int TerminalBufferSize = 1000;
@@ -19,14 +22,17 @@ public class InternalSessionStorage
 
     public ConcurrentDictionary<Guid, InternalActiveSession> Sessions { get; set; } = new();
 
-    public InternalActiveSession Connect(ExternalActiveSession activeSessionModel, ServerConfig config)
+    /// <summary>
+    /// Connect to remote terminal
+    /// </summary>
+    public InternalActiveSession Connect(ExternalActiveSession clientSession, ServerConfig config)
     {
         SshClient sshClient = null!;
         ShellStream shellStream = null!;
         try
         {
             var timeOutMinutes = config.MaxIdleMinutes < 1 ? 1 : config.MaxIdleMinutes > 20 ? 20 : config.MaxIdleMinutes;
-            var clientStoredSession = activeSessionModel.StoredSession;
+            var clientStoredSession = clientSession.StoredSession;
 
             sshClient = new SshClient(clientStoredSession!.Host,
                 clientStoredSession.Port,
@@ -48,7 +54,7 @@ public class InternalSessionStorage
             var session = new InternalActiveSession
             {
                 Status = "Connected",
-                SessionId = activeSessionModel.ConnectionId,
+                SessionId = clientSession.ConnectionId,
                 ShellStream = shellStream,
                 SshClient = sshClient,
                 StartSessionDate = DateTime.Now,
