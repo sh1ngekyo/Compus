@@ -41,9 +41,9 @@ public static class TerminalUtilities
 
     public static (string CommandName, bool Successful) GetPrevCommand(Guid sessionId, ref int currentCommandLine)
     {
-        if (SendedCommands.TryGetValue(sessionId, out var commands) 
-            && commands.Count > 0 
-            && currentCommandLine > 1)
+        if (SendedCommands.TryGetValue(sessionId, out var commands) && 
+            commands.Count > 0 &&
+            currentCommandLine > 1)
         {
             currentCommandLine--;
             return (commands.Skip(currentCommandLine - 1).FirstOrDefault(), true)!;
@@ -54,9 +54,9 @@ public static class TerminalUtilities
 
     public static (string CommandName, bool Successful) GetNextCommand(Guid sessionId, ref int currentCommandLine)
     {
-        if (SendedCommands.TryGetValue(sessionId, out var commands) 
-            && commands.Count > currentCommandLine 
-            && currentCommandLine > 0)
+        if (SendedCommands.TryGetValue(sessionId, out var commands) && 
+            commands.Count > currentCommandLine && 
+            currentCommandLine > 0)
         {
             currentCommandLine++;
             return (commands.Skip(currentCommandLine - 1).FirstOrDefault(), true)!;
@@ -90,13 +90,7 @@ public static class TerminalUtilities
 
     public static void Clear(Guid sessionId)
     {
-        if (TerminalOutput.ContainsKey(sessionId))
-        {
-            TerminalOutput.Remove(sessionId);
-        }
-        if (SendedCommands.ContainsKey(sessionId))
-        {
-            SendedCommands.Remove(sessionId);
-        }
+        TerminalOutput.Remove(sessionId);
+        SendedCommands.Remove(sessionId);
     }
 }

@@ -49,10 +49,10 @@ namespace Compus.Web.API.Controllers
             return _terminalService.IsConnected(terminalId, storageId!);
         }
 
-        public ApiResponse<bool> Disconnect(Guid uniqueId)
+        public ApiResponse<bool> Disconnect(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.Disconnect(uniqueId, storageId!);
+            return _terminalService.Disconnect(terminalId, storageId!);
         }
 
         public ApiResponse<List<ExternalActiveSession>> GetAllConnectedSessions()
