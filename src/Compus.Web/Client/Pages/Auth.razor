@@ -66,14 +66,15 @@
 </div>
 
 @code {
-    private readonly string BaseUrl = "api/Auth";
     public SignInViewModel SignInVM { get; set; } = new();
     public bool DuringAuthorizationProccess { get; set; }
     public bool? IsSignedIn { get; set; }
     public string? CaptchaUrl { get; set; }
 
+    private readonly string _baseUrl = "api/Auth";
+
     private void UpdateCaptcha()
-        => CaptchaUrl = $"{BaseUrl}/RequestCaptcha?timestamp=" + DateTime.Now.Ticks;
+        => CaptchaUrl = $"{_baseUrl}/RequestCaptcha?timestamp=" + DateTime.Now.Ticks;
 
     private async void SignInAsync()
     {
@@ -84,7 +85,10 @@
         DuringAuthorizationProccess = true;
         try
         {
-            SignInVM = (await (await Http.PostAsJsonAsync($"{BaseUrl}/SignIn", SignInVM)).Content.ReadFromJsonAsync<SignInViewModel>())!;
+            SignInVM = (await 
+                (await Http.PostAsJsonAsync($"{_baseUrl}/SignIn", SignInVM))
+                    .Content.ReadFromJsonAsync<SignInViewModel>())!;
+
             if (SignInVM!.Status == SignInStatus.Authorized)
             {
                 NavManager.NavigateTo("/Connect");
@@ -108,9 +112,14 @@
 
     private async void SignOutAsync()
     {
-        await Http.GetAsync($"{BaseUrl}/SignOut");
-        bool.TryParse(await Http.GetStringAsync($"{BaseUrl}/Authorized"), out var result);
+        await Http.GetAsync($"{_baseUrl}/SignOut");
+
+        bool.TryParse(
+            await Http.GetStringAsync($"{_baseUrl}/Authorized"),
+            out var result);
+
         IsSignedIn = result;
+
         StateHasChanged();
     }
 
@@ -118,9 +127,11 @@
     {
         await base.OnInitializedAsync();
 
-        CaptchaUrl = $"{BaseUrl}/RequestCaptcha";
+        CaptchaUrl = $"{_baseUrl}/RequestCaptcha";
 
-        bool.TryParse(await Http.GetStringAsync($"{BaseUrl}/Authorized"), out var result);
+        bool.TryParse(
+            await Http.GetStringAsync($"{_baseUrl}/Authorized"),
+            out var result);
 
         IsSignedIn = result;
     }

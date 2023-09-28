@@ -12,7 +12,7 @@ namespace Compus.Web.API.Controllers
     [Route("api/[controller]/[action]")]
     public class TerminalController : ControllerBase
     {
-        public readonly ITerminalService _terminalService;
+        private readonly ITerminalService _terminalService;
 
         public TerminalController(ITerminalService terminalService)
         {

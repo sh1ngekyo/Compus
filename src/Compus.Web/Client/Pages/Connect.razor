@@ -45,12 +45,13 @@
 </div>
 
 @code{
-
-    ExternalStoredSession _storedSession = TerminalUtilities.StoredSession ?? new ExternalStoredSession { Name = "Temporary Server" };
-
     public ExternalStoredSession StoredSession => _storedSession;
 
     public string? Status { get; set; }
+
+    private readonly string _baseUrl = "/api/Terminal";
+    
+    private ExternalStoredSession _storedSession = TerminalUtilities.StoredSession ?? new ExternalStoredSession { Name = "Temporary Server" };
 
     async void Connected()
     {
@@ -61,7 +62,7 @@
                 StoredSession = StoredSession
             };
 
-            var content = await Http.PostAsJsonAsync("/api/Terminal/Connect", activeSession);
+            var content = await Http.PostAsJsonAsync($"{_baseUrl}/Connect", activeSession);
             if (content.IsSuccessStatusCode)
             {
                 var result = await content.Content.ReadFromJsonAsync<ApiResponse<ExternalActiveSession>>();
