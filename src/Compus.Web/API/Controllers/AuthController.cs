@@ -15,23 +15,23 @@ namespace Compus.Web.API.Controllers
         public AuthController(IAuthService authService) 
             => _authService = authService;
 
-        public async Task<SignInViewModel> SignIn(SignInViewModel loginModel)
+        public async Task<SignInViewModel> SignIn(SignInViewModel signInVM)
         {
-            loginModel.Status = SignInStatus.Authorized;
+            signInVM.Status = SignInStatus.Authorized;
             var sessionCaptcha = HttpContext.Session.GetString(nameof(SignInViewModel.Captcha))!;
             HttpContext.Session.Remove(nameof(SignInViewModel.Captcha));
-            if (!_authService.ValidateCaptcha(loginModel.Captcha!, sessionCaptcha))
+            if (!_authService.ValidateCaptcha(signInVM.Captcha!, sessionCaptcha))
             {
-                loginModel.Status = SignInStatus.NotAuthorized;
-                loginModel.ErrorMessage = "Wrong Captcha";
-                return loginModel;
+                signInVM.Status = SignInStatus.NotAuthorized;
+                signInVM.ErrorMessage = "Wrong Captcha";
+                return signInVM;
             }
-            if (!await _authService.SignInAsync(loginModel.UserName!, loginModel.Password!, loginModel.Persist))
+            if (!await _authService.SignInAsync(signInVM.UserName!, signInVM.Password!, signInVM.Persist))
             {
-                loginModel.Status = SignInStatus.NotAuthorized;
-                loginModel.ErrorMessage = "Wrong UserName or Password";
+                signInVM.Status = SignInStatus.NotAuthorized;
+                signInVM.ErrorMessage = "Wrong UserName or Password";
             }
-            return loginModel;
+            return signInVM;
         }
 
         public async new void SignOut() => await _authService.SignOutAsync();
