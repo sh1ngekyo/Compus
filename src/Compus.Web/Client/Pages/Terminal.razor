@@ -111,7 +111,7 @@
 
         var isConnected = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/IsConnected?terminalId=" + SessionId);
 
-        if (isConnected!.Response)
+        if (isConnected!.Result)
         {
             StartFetchUpdate();
         }
@@ -134,13 +134,13 @@
 
                 var needGetLinesRightNow = false;
                 var response = await Http.GetFromJsonAsync<ApiResponse<TerminalContent>>($"{_baseUrl}/GetView?terminalId=" + SessionId, token);
-                if (response!.StatusResult == ResponseStatus.Success)
+                if (response!.Status == ResponseStatus.Success)
                 {
-                    if (!string.IsNullOrEmpty(response.Response!.Content))
+                    if (!string.IsNullOrEmpty(response.Result!.Content))
                     {
-                        await WriteToTerminal(response.Response.Content, false);
+                        await WriteToTerminal(response.Result.Content, false);
 
-                        if (response.Response.Lines == Constants.MaxinumLines)
+                        if (response.Result.Lines == Constants.MaxinumLines)
                         {
                             needGetLinesRightNow = true;
                         }
@@ -150,7 +150,7 @@
                 {
                     await WriteToTerminal(response.ExtraMessage!);
 
-                    if (response.StatusResult == ResponseStatus.Exception)
+                    if (response.Status == ResponseStatus.Exception)
                     {
                         _cancellationTokenSource.Cancel();
                     }
@@ -177,7 +177,7 @@
             var content = await Http.GetAsync($"{_baseUrl}/ExecuteCommand?command=" + System.Web.HttpUtility.UrlEncode(Command) + "&terminalId=" + SessionId);
             content.EnsureSuccessStatusCode();
             var response = await content.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-            if (response!.StatusResult != ResponseStatus.Success || !response.Response)
+            if (response!.Status != ResponseStatus.Success || !response.Result)
             {
                 await WriteToTerminal(response.ExtraMessage!);
             }

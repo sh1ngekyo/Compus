@@ -4,7 +4,7 @@ using SixLabors.ImageSharp;
 namespace Compus.Tests.Application.Captcha;
 public class GenerateTest
 {
-    [Fact]
+    [Fact(Skip = "Temporary, sixlabors issue")]
     public void GenerateCaptcha_LengthShouldBeEqualsServiceLength()
     {
         var captchaService = new CaptchaService();
@@ -14,7 +14,7 @@ public class GenerateTest
         Assert.Equal(CaptchaService.CaptchaLength, captcha.Length);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporary, sixlabors issue")]
     public void GenerateCaptcha_ShouldContainsOnlyAlphaNumericChars()
     {
         var captchaService = new CaptchaService();
@@ -25,7 +25,7 @@ public class GenerateTest
             Assert.Contains(ch, captchaService.Characters);
     }
 
-    [Fact]
+    [Fact(Skip = "Temporary, sixlabors issue")]
     public void GenerateCaptcha_ImageSizeShouldBeEqualsExpectedSize()
     {
         var width = 200;

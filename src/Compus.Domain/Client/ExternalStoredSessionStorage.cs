@@ -2,19 +2,19 @@
 
 public class ExternalStoredSessionStorage
 {
+    public List<ExternalStoredSession> Sessions { get; set; } = new();
+
     public void RenewStoredSession(ExternalStoredSession session)
     {
         var exist = Sessions.FirstOrDefault(u => u.ConnectionId == session.ConnectionId);
-        if (exist != null)
+        if (exist == null)
         {
-            if (!session.Equals(exist))
-            {
-                Sessions.Remove(exist);
-                Sessions.Add(session);
-            }
+            Sessions.Add(session);
+            return;
         }
-        else
+        if (!session.Equals(exist))
         {
+            Sessions.Remove(exist);
             Sessions.Add(session);
         }
     }
@@ -27,6 +27,4 @@ public class ExternalStoredSessionStorage
             Sessions.Remove(session);
         }
     }
-
-    public List<ExternalStoredSession> Sessions { get; set; } = new();
 }

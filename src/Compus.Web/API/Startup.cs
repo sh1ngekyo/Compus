@@ -3,6 +3,7 @@ using Compus.Application.Abstractions;
 using Compus.Application.Services.Auth;
 using Compus.Application.Services.Captcha;
 using Compus.Application.Services.Terminal;
+using Compus.Application.Services.Terminal.Utils;
 using Compus.Domain.Server;
 using Microsoft.AspNetCore.Authentication.Cookies;
 

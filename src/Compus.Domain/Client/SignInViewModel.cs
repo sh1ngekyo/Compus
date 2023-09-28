@@ -10,5 +10,5 @@ public class SignInViewModel
     public bool Persist { get; set; }
     public string? Captcha { get; set; }
     public SignInStatus Status { get; set; }
-    public string? Message { get; set; }
+    public string? ErrorMessage { get; set; }
 }

@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Compus</title>
-    <base href="/"/>
-    <link rel="stylesheet" href="css/app.css"/>
+    <base href="/" />
+    <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="assets/vendors/jvectormap/jquery-jvectormap.css">
@@ -13,17 +13,24 @@
     <link rel="stylesheet" href="assets/vendors/owl-carousel-2/owl.carousel.min.css">
     <link rel="stylesheet" href="assets/vendors/owl-carousel-2/owl.theme.default.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="css/xterm.min.css"/>
+    <link rel="stylesheet" href="css/xterm.min.css" />
     <link rel="shortcut icon" href="assets/images/favicon.png" />
 </head>
 <body>
-    <app>Loading...</app>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
+    <app>
+        <div class="loader-wrapper">
+            <div class="loader-container">
+                <div class="loader"></div>
+            </div>
+            <div id="blazor-error-ui">
+                An unhandled error has occurred.
+                <a href="" class="reload">Reload</a>
+                <a class="dismiss">🗙</a>
+            </div>
+        </div>
+    </app>
+
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 

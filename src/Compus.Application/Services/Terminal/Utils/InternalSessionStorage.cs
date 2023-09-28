@@ -6,10 +6,17 @@ using Compus.Domain.Shared;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
-namespace Compus.Application.Services.Terminal;
+namespace Compus.Application.Services.Terminal.Utils;
 
 public class InternalSessionStorage
 {
+    private const int TerminalBufferSize = 1000;
+    private const uint TerminalRows = 30;
+    private const uint TerminalCols = 80;
+
+    private readonly TimeSpan _terminalTimeout = TimeSpan.FromSeconds(0.3);
+    private readonly (uint Width, uint Height) _terminalSize = (800, 400);
+
     public ConcurrentDictionary<Guid, InternalActiveSession> Sessions { get; set; } = new();
 
     public InternalActiveSession Connect(ExternalActiveSession activeSessionModel, ServerConfig config)
@@ -28,7 +35,14 @@ public class InternalSessionStorage
 
             sshClient.ConnectionInfo.Timeout = TimeSpan.FromMinutes(timeOutMinutes);
             sshClient.Connect();
-            shellStream = sshClient.CreateShellStream("Terminal", 80, 30, 800, 400, 1000);
+
+            shellStream = sshClient.CreateShellStream(
+                "Terminal",
+                TerminalCols,
+                TerminalRows,
+                _terminalSize.Width,
+                _terminalSize.Height,
+                TerminalBufferSize);
 
             var outputQueue = new ConcurrentQueue<string>();
             var session = new InternalActiveSession
@@ -44,7 +58,7 @@ public class InternalSessionStorage
             };
 
             string result = null!;
-            while ((result = session.ShellStream.ReadLine(TimeSpan.FromSeconds(0.3))) != null)
+            while ((result = session.ShellStream.ReadLine(_terminalTimeout)) != null)
             {
                 outputQueue.Enqueue(result + Constants.NewLine);
             }
@@ -57,7 +71,7 @@ public class InternalSessionStorage
                 {
                     outputQueue.Enqueue(Encoding.UTF8.GetString(e.Data));
 
-                    if(outputQueue.Count > Constants.MaxinumQueueCount)
+                    if (outputQueue.Count > Constants.MaxinumQueueCount)
                     {
                         outputQueue.TryDequeue(out _);
                     }
@@ -82,7 +96,7 @@ public class InternalSessionStorage
         }
     }
 
-    void OnErrorOccurred(object sender, ExceptionEventArgs e)
+    private void OnErrorOccurred(object sender, ExceptionEventArgs e)
     {
         RemoveActiveSession((sender as InternalActiveSession)?.SessionId ?? Guid.Empty);
     }

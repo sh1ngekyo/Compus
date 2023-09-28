@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Compus.Domain.Client;
 using Compus.Domain.Shared;
+using Compus.Web.Client.Extensions;
 
 namespace Compus.Web.Client;
 
@@ -10,9 +11,7 @@ public static class TerminalUtilities
     public static ExternalSessionStorage SessionStorage { get; set; } = new();
     private static Dictionary<Guid, StringBuilder> TerminalOutput { get; set; } = new();
     private static Dictionary<Guid, List<string>> SendedCommands { get; set; } = new();
-    private static string[] SplitByLines(this string str)
-        => str?.Replace("\r\n", "\n").Split("\n") ?? Array.Empty<string>();
-
+    
     public static void SaveTerminalOutput(Guid sessionId, string message)
     {
         if (!TerminalOutput.TryGetValue(sessionId, out var output))
