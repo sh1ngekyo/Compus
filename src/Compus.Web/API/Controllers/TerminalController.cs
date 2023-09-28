@@ -28,37 +28,37 @@ namespace Compus.Web.API.Controllers
                 storageId = Guid.NewGuid().ToString();
                 HttpContext.Session.SetString(Constants.ClientSessionIdName, storageId);
             }
-            return _terminalService.Connect(session, storageId);
+            return _terminalService.Try(() => _terminalService.Connect(session, storageId));
         }
 
         public ApiResponse<bool> ExecuteCommand(Guid terminalId, string command)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.ExecuteCommand(terminalId, storageId!, command);
+            return _terminalService.Try(() => _terminalService.ExecuteCommand(terminalId, storageId!, command));
         }
 
         public ApiResponse<TerminalContent> GetView(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.GetView(terminalId, storageId!);
+            return _terminalService.Try(() => _terminalService.GetView(terminalId, storageId!));
         }
 
         public ApiResponse<bool> IsConnected(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.IsConnected(terminalId, storageId!);
+            return _terminalService.Try(() => _terminalService.IsConnected(terminalId, storageId!));
         }
 
         public ApiResponse<bool> Disconnect(Guid terminalId)
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.Disconnect(terminalId, storageId!);
+            return _terminalService.Try(() => _terminalService.Disconnect(terminalId, storageId!));
         }
 
         public ApiResponse<List<ExternalActiveSession>> GetAllConnectedSessions()
         {
             var storageId = HttpContext.Session.GetString(Constants.ClientSessionIdName);
-            return _terminalService.GetAllConnectedSessions(storageId!);
+            return _terminalService.Try(() => _terminalService.GetAllConnectedSessions(storageId!));
         }
     }
 }

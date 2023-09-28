@@ -1,8 +1,7 @@
 ﻿using Compus.Application.Abstractions;
+using Compus.Application.Extensions;
 using Compus.Domain.Server;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
 
 namespace Compus.Application.Services.Auth;
 
@@ -12,47 +11,34 @@ public class AuthService : IAuthService
     private readonly IHttpContextWrapper _httpContextWrapper;
     public bool Authorized => _httpContextWrapper.IsAuthenticated();
 
-    public AuthService(IHttpContextWrapper httpContextWrapper, ServerConfig shellConfiguration)
-        => (_cfg, _httpContextWrapper) = (shellConfiguration, httpContextWrapper);
+    public AuthService(IHttpContextWrapper httpContextWrapper, ServerConfig cfg)
+        => (_cfg, _httpContextWrapper) = (cfg, httpContextWrapper);
 
     private bool VerifyCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession)
-        => !string.IsNullOrWhiteSpace(receivedCaptcha)
-        && validCaptchaForCurrentSession == receivedCaptcha.ToLowerInvariant();
+        => !string.IsNullOrWhiteSpace(receivedCaptcha) && 
+            validCaptchaForCurrentSession == receivedCaptcha.ToLowerInvariant();
 
     public bool ValidateCaptcha(string receivedCaptcha, string validCaptchaForCurrentSession) 
-        => !_cfg.EnableAuthorization || VerifyCaptcha(receivedCaptcha, validCaptchaForCurrentSession);
-
-    private (ClaimsPrincipal Principal, AuthenticationProperties Properties) CreateAuthInfo(User user, bool persist)
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName!)
-        };
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-        var properties = new AuthenticationProperties();
-
-        if (persist)
-        {
-            properties.IsPersistent = true;
-            properties.ExpiresUtc = DateTime.UtcNow.AddMonths(12);
-        }
-
-        return (principal, properties);
-    }
+        => !_cfg.EnableAuthorization ||
+            VerifyCaptcha(receivedCaptcha, validCaptchaForCurrentSession);
 
     public async Task<bool> SignInAsync(string username, string password, bool persist)
     {
-        var user = _cfg.Users!.FirstOrDefault(u => !_cfg.EnableAuthorization || (u.UserName == username && u.Password == password));
+        var user = _cfg.Users!.FirstOrDefault(
+            u => !_cfg.EnableAuthorization ||
+            (u.UserName == username && u.Password == password));
 
         if (user == null)
         {
             return false;
         }
-        var authInfo = CreateAuthInfo(user, persist);
-        await _httpContextWrapper.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authInfo.Principal, authInfo.Properties);
+
+        var authProps = user.GetAuthProperties(persist);
+        await _httpContextWrapper.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            authProps.Principal,
+            authProps.Properties);
+
         return true;
     }
 

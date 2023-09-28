@@ -2,7 +2,7 @@
 using Compus.Domain.Client;
 using Renci.SshNet;
 
-namespace Compus.Application.Services.Terminal;
+namespace Compus.Application.Services.Terminal.Utils;
 
 public class InternalActiveSession : IDisposable
 {

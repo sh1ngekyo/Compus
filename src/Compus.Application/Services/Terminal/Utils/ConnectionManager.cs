@@ -1,16 +1,17 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using Compus.Application.Extensions;
 using Compus.Domain.Client;
 using Compus.Domain.Server;
 using Compus.Domain.Shared;
 
-namespace Compus.Application.Services.Terminal;
+namespace Compus.Application.Services.Terminal.Utils;
 
 public class ConnectionManager
 {
     private static ConcurrentDictionary<string, InternalSessionStorage> ConnectionPool { get; set; } = new();
     private readonly ServerConfig _config;
-    private const int _sessionManagementDelayMs = 120 * 1000;
+    private const int SessionManagementDelayMs = 120 * 1000;
     private const string ControlCommand = "ctrl + ";
 
     public ConnectionManager(ServerConfig config)
@@ -24,26 +25,21 @@ public class ConnectionManager
            {
                while (true)
                {
-                   Thread.Sleep(_sessionManagementDelayMs);
+                   Thread.Sleep(SessionManagementDelayMs);
                    RemoveExpiredSessions();
                }
            });
-
-    private IEnumerable<KeyValuePair<Guid, InternalActiveSession>> GetExpiredSessions(InternalSessionStorage sessionStorage)
-        => sessionStorage.Sessions.Where(
-                u => u.Value.LastActiveSessionDate < DateTime.Now.AddMinutes(-_config.MaxIdleMinutes)
-                || !u.Value.SshClient!.IsConnected);
 
     private void RemoveExpiredSessions()
     {
         foreach (var sessionStorage in ConnectionPool.ToArray())
         {
-            var expiredSessions = GetExpiredSessions(sessionStorage.Value).ToArray();
+            var expiredSessions = sessionStorage.Value.GetExpiredSessions(_config).ToArray();
             foreach (var expiredSession in expiredSessions)
             {
                 sessionStorage.Value.RemoveActiveSession(expiredSession.Key);
             }
-            if (sessionStorage.Value.Sessions.Count == 0)
+            if (sessionStorage.Value.Sessions.IsEmpty)
             {
                 ConnectionPool.TryRemove(sessionStorage.Key, out _);
             }
@@ -53,12 +49,8 @@ public class ConnectionManager
     private bool TryGetSessionByStorageId(string storageId, Guid sessionId, out InternalActiveSession session)
     {
         session = null!;
-        if (ConnectionPool.TryGetValue(storageId, out var storage)
-            && storage.Sessions.TryGetValue(sessionId, out session!))
-        {
-            return true;
-        }
-        return false;
+        return ConnectionPool.TryGetValue(storageId, out var storage) &&
+               storage.Sessions.TryGetValue(sessionId, out session!);
     }
 
     public void AddConnection(string storageId, ExternalActiveSession activeSessionModel)
