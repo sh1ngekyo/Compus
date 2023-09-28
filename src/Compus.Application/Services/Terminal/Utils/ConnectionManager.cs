@@ -78,11 +78,9 @@ public class ConnectionManager
             }
             session.LastActiveSessionDate = DateTime.Now;
             session.ShellStream!.WriteLine(command);
+            return;
         }
-        else
-        {
-            throw new Exception("No available terminal connected");
-        }
+        throw new Exception("No available terminal connected");
     }
 
     public TerminalContent GetTerminalOutput(string storageId, Guid sessionId)
@@ -102,10 +100,7 @@ public class ConnectionManager
                 Lines = totalLines
             };
         }
-        else
-        {
-            throw new Exception("No available terminal connected");
-        }
+        throw new Exception("No available terminal connected");
     }
 
     public bool IsConnected(string storageId, Guid sessionId)
@@ -114,10 +109,7 @@ public class ConnectionManager
         {
             return session.SshClient!.IsConnected;
         }
-        else
-        {
-            throw new Exception("No available shell connected");
-        }
+        throw new Exception("No available terminal connected");
     }
 
     public bool Disconnect(string storageId, Guid sessionId)
@@ -128,10 +120,7 @@ public class ConnectionManager
 
             return true;
         }
-        else
-        {
-            throw new Exception("No available shell connected");
-        }
+        throw new Exception("No available terminal connected");
     }
 
     public List<ExternalActiveSession> FlushStorage(string storageId)
