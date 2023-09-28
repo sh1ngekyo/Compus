@@ -23,13 +23,13 @@ namespace Compus.Web.API.Controllers
             if (!_authService.ValidateCaptcha(loginModel.Captcha!, sessionCaptcha))
             {
                 loginModel.Status = SignInStatus.NotAuthorized;
-                loginModel.Message = "Wrong Captcha";
+                loginModel.ErrorMessage = "Wrong Captcha";
                 return loginModel;
             }
             if (!await _authService.SignInAsync(loginModel.UserName!, loginModel.Password!, loginModel.Persist))
             {
                 loginModel.Status = SignInStatus.NotAuthorized;
-                loginModel.Message = "Wrong UserName or Password";
+                loginModel.ErrorMessage = "Wrong UserName or Password";
             }
             return loginModel;
         }

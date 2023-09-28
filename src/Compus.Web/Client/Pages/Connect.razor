@@ -13,7 +13,7 @@
         <div class="content-wrapper full-page-wrapper d-flex align-items-center auth">
             <div class="card col-lg-12 mx-auto">
                 <div class="card-body px-5 py-5">
-                    <h3 class="card-title text-left mb-3">Connect to server - @StoredSession.DisplayName</h3>
+                    <h3 class="card-title text-left mb-3">Connect to server - @StoredSession.Name</h3>
                     <div class="form-group">
                         <label for="RemoteHost">Host Address</label>
                         <input type="text" class="form-control text-white" autocomplete="off" id="RemoteHost" @bind-value="@StoredSession.Host">
@@ -46,7 +46,7 @@
 
 @code{
 
-    ExternalStoredSession _storedSession = TerminalUtilities.StoredSession ?? new ExternalStoredSession { DisplayName = "Temporary Server" };
+    ExternalStoredSession _storedSession = TerminalUtilities.StoredSession ?? new ExternalStoredSession { Name = "Temporary Server" };
 
     public ExternalStoredSession StoredSession => _storedSession;
 
@@ -66,10 +66,10 @@
             {
                 var result = await content.Content.ReadFromJsonAsync<ApiResponse<ExternalActiveSession>>();
 
-                if (result!.StatusResult == ResponseStatus.Success)
+                if (result!.Status == ResponseStatus.Success)
                 {
                     TerminalUtilities.StoredSession = null;
-                    NavManager.NavigateTo("/Terminal/" + result.Response!.ConnectionId);
+                    NavManager.NavigateTo("/Terminal/" + result.Result!.ConnectionId);
                 }
                 else
                 {

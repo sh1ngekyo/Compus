@@ -14,7 +14,7 @@ public class TerminalService : ITerminalService
 
     private ApiResponse<T> CreateResponse<T>() => new ApiResponse<T>
     {
-        StatusResult = ResponseStatus.Success
+        Status = ResponseStatus.Success
     };
 
     public ApiResponse<ExternalActiveSession> Connect(ExternalActiveSession activeSessionModel, string storageId)
@@ -27,7 +27,7 @@ public class TerminalService : ITerminalService
             {
                 _connectionManager!.AddConnection(storageId, activeSessionModel);
 
-                response.Response = new ExternalActiveSession
+                response.Result = new ExternalActiveSession
                 {
                     StartSessionDate = DateTime.Now,
                     Status = "Connected Successful",
@@ -38,7 +38,7 @@ public class TerminalService : ITerminalService
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
         return response;
@@ -52,17 +52,17 @@ public class TerminalService : ITerminalService
         {
             if (string.IsNullOrEmpty(storageId))
             {
-                response.StatusResult = ResponseStatus.Fail;
+                response.Status = ResponseStatus.Fail;
                 response.ExtraMessage = "No active sessions";
             }
             else
             {
-                response.Response = _connectionManager!.Disconnect(storageId, sessionId);
+                response.Result = _connectionManager!.Disconnect(storageId, sessionId);
             }
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -77,18 +77,18 @@ public class TerminalService : ITerminalService
         {
             if (string.IsNullOrEmpty(storageId))
             {
-                response.StatusResult = ResponseStatus.Fail;
+                response.Status = ResponseStatus.Fail;
                 response.ExtraMessage = "No active sessions";
             }
             else
             {
                 _connectionManager!.ExecuteCommand(storageId, sessionId, command);
-                response.Response = true;
+                response.Result = true;
             }
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -103,16 +103,16 @@ public class TerminalService : ITerminalService
         {
             if (string.IsNullOrEmpty(storageId))
             {
-                response.Response = new List<ExternalActiveSession>();
+                response.Result = new List<ExternalActiveSession>();
             }
             else
             {
-                response.Response = _connectionManager!.FlushStorage(storageId);
+                response.Result = _connectionManager!.FlushStorage(storageId);
             }
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -127,17 +127,17 @@ public class TerminalService : ITerminalService
         {
             if (string.IsNullOrEmpty(storageId))
             {
-                response.StatusResult = ResponseStatus.Fail;
+                response.Status = ResponseStatus.Fail;
                 response.ExtraMessage = "No active sessions";
             }
             else
             {
-                response.Response = _connectionManager!.GetTerminalOutput(storageId, sessionId);
+                response.Result = _connectionManager!.GetTerminalOutput(storageId, sessionId);
             }
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 
@@ -152,17 +152,17 @@ public class TerminalService : ITerminalService
         {
             if (string.IsNullOrEmpty(storageId))
             {
-                response.StatusResult = ResponseStatus.Fail;
+                response.Status = ResponseStatus.Fail;
                 response.ExtraMessage = "No active sessions";
             }
             else
             {
-                response.Response = _connectionManager!.IsConnected(storageId, sessionId);
+                response.Result = _connectionManager!.IsConnected(storageId, sessionId);
             }
         }
         catch (Exception ex)
         {
-            response.StatusResult = ResponseStatus.Exception;
+            response.Status = ResponseStatus.Exception;
             response.ExtraMessage = ex.Message;
         }
 

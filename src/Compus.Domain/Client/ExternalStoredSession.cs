@@ -1,14 +1,16 @@
 ﻿using System.Text;
 using System.Text.Json.Serialization;
+using Compus.Domain.Client.Extensions;
+using Compus.Domain.Shared;
 
 namespace Compus.Domain.Client;
 
 public class ExternalStoredSession
 {
     public Guid ConnectionId { get; set; } = Guid.NewGuid();
-    public string? DisplayName { get; set; }
+    public string? Name { get; set; }
     public string? Host { get; set; }
-    public int Port { get; set; } = 22;
+    public int Port { get; set; } = Constants.DefaultPort;
     public string? UserName { get; set; }
     public string? Password { get; set; }
     public byte[]? FingerPrint { get; set; }
@@ -17,29 +19,14 @@ public class ExternalStoredSession
     [JsonIgnore]
     public string DecryptedPassword
     {
-        get => EncodePassword(Password);
-        set => Password = !string.IsNullOrEmpty(value) ? Convert.ToBase64String(Encoding.UTF8.GetBytes(value)) : string.Empty;
-    }
-
-    private string EncodePassword(string? password)
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(Password))
-            {
-                return Encoding.UTF8.GetString(Convert.FromBase64String(Password));
-            }
-        }
-        catch
-        {
-        }
-        return string.Empty;
+        get => this.EncodePassword();
+        set => Password = this.DecodePassword(value);
     }
 
     public ExternalStoredSession Clone(bool nonUninqueId = true) => new()
     {
         ConnectionId = nonUninqueId ? ConnectionId : Guid.NewGuid(),
-        DisplayName = DisplayName,
+        Name = Name,
         Host = Host,
         Port = Port,
         UserName = UserName,

@@ -32,7 +32,7 @@
                             {
 
                                 <tr>
-                                    <td>@session.Value.StoredSession!.DisplayName</td>
+                                    <td>@session.Value.StoredSession!.Name</td>
                                     <td>@session.Value.StartSessionDate </td>
                                     <td><button class="btn btn-outline-primary btn-sm" @onclick="() => OpenTerminal(session.Value)">Open</button></td>
                                     <td><button class="btn btn-outline-danger btn-sm" @onclick="() => Disconnect(session.Value)">Disconnect</button></td>
@@ -78,7 +78,7 @@
                             @foreach (var storedSession in SessionsStorage.Sessions)
                             {
                                 <tr>
-                                    <td>@storedSession.DisplayName</td>
+                                    <td>@storedSession.Name</td>
                                     <td>@storedSession.Host</td>
                                     <td>@storedSession.Port</td>
                                     <td>@storedSession.UserName</td>
@@ -103,7 +103,7 @@
             <h4 class="card-title">Edit Session</h4>
             <div class="form-group">
                 <label for="DisplayName">Session Name</label>
-                <input type="text" class="form-control text-white" id="DisplayName" autocomplete="off" @bind-value="@StoredSession.DisplayName">
+                <input type="text" class="form-control text-white" id="DisplayName" autocomplete="off" @bind-value="@StoredSession.Name">
             </div>
             <div class="form-group">
                 <label for="RemoteHost">Host</label>
@@ -167,11 +167,11 @@
     {
         var response = await Http.GetFromJsonAsync<ApiResponse<List<ExternalActiveSession>>>($"{_baseUrl}/GetAllConnectedSessions");
 
-        if (response!.StatusResult == ResponseStatus.Success)
+        if (response!.Status == ResponseStatus.Success)
         {
             TerminalUtilities.SessionStorage.RemoveActiveSessions();
 
-            foreach (var activeSession in response.Response!)
+            foreach (var activeSession in response.Result!)
             {
                 TerminalUtilities.SessionStorage.AddActiveSession(activeSession);
             }
@@ -215,7 +215,7 @@
     private void CopySession(ExternalStoredSession session)
     {
         StoredSession = session.Clone(false);
-        StoredSession.DisplayName = StoredSession.DisplayName + "_Copy";
+        StoredSession.Name = StoredSession.Name + "_Copy";
         SessionsStorage!.RenewStoredSession(StoredSession);
     }
 
@@ -226,7 +226,7 @@
         try
         {
             var isConnected = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/IsConnected?terminalId=" + session.ConnectionId);
-            if (isConnected!.StatusResult == ResponseStatus.Success && isConnected.Response)
+            if (isConnected!.Status == ResponseStatus.Success && isConnected.Result)
             {
                 NavManager.NavigateTo("/Terminal/" + session.ConnectionId);
             }
@@ -248,7 +248,7 @@
         try
         {
             var response = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/Disconnect?terminalId=" + session.ConnectionId);
-            if (response!.StatusResult == ResponseStatus.Success && response.Response)
+            if (response!.Status == ResponseStatus.Success && response.Result)
             {
                 TerminalUtilities.SessionStorage.RemoveActiveSession(session.ConnectionId);
             }

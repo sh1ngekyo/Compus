@@ -43,7 +43,7 @@
                                 @if (SignInVM.Status != SignInStatus.Authorized)
                                 {
                                     <div class="alert alert-danger" role="alert">
-                                        @SignInVM.Status @SignInVM.Message
+                                        @SignInVM.Status @SignInVM.ErrorMessage
                                     </div>
                                 }
                                 <div class="text-center">
@@ -96,7 +96,7 @@
         }
         catch (Exception ex)
         {
-            SignInVM.Message = ex.Message;
+            SignInVM.ErrorMessage = ex.Message;
             SignInVM.Status = SignInStatus.Exception;
         }
         finally
