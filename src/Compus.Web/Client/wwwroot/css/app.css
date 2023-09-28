@@ -1,4 +1,14 @@
-﻿.loader-wrapper {
+﻿::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.loader-wrapper {
     margin: 0px;
     background: radial-gradient(#191c24, #000);
     display: flex;
