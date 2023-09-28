@@ -102,6 +102,9 @@ public class InternalSessionStorage
         }
     }
 
+    /// <summary>
+    /// Error handler
+    /// </summary>
     private void OnErrorOccurred(object sender, ExceptionEventArgs e)
     {
         RemoveActiveSession((sender as InternalActiveSession)?.SessionId ?? Guid.Empty);
