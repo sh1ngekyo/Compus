@@ -107,10 +107,10 @@ public class CaptchaService : ICaptchaService
     {
         for (int i = 0; i < _random.Next(_glitchesCount.Min, _glitchesCount.Max); i++)
         {
-            var linePen = new SolidPen(new SolidBrush(GetRandomLightColor()), 3);
+            var linePen = new Pen(new SolidBrush(GetRandomLightColor()), 3);
             var startPoint = new Point(_random.Next(0, width), _random.Next(0, height));
             var endPoint = new Point(_random.Next(0, width), _random.Next(0, height));
-            graphics.Mutate(operation => operation.DrawLine(linePen, startPoint, endPoint));
+            graphics.Mutate(operation => operation.DrawLines(linePen, startPoint, endPoint));
         }
     }
 }
