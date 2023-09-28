@@ -1,0 +1,127 @@
+﻿@page "/Auth"
+
+@using Compus.Domain.Client;
+@using Compus.Domain.Server.Enums;
+
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<div class="container-fluid page-body-wrapper full-page-wrapper">
+    <div class="row w-100 m-0">
+        <div class="content-wrapper full-page-wrapper d-flex align-items-center auth">
+            <div class="card col-lg-12 mx-auto">
+                <div class="card-body px-5 py-5">
+                    @if (IsSignedIn.HasValue)
+                    {
+                        <h3 class="card-title text-left mb-3">@(IsSignedIn.Value ? "Sign out from" : "Sign in to") the server</h3>
+                        @if (!IsSignedIn.Value)
+                        {
+                            <form>
+                                <div class="form-group">
+                                    <label for="UserName">Username <span class="text-red">*</span></label>
+                                    <input type="text" class="form-control text-white" id="UserName" @bind-value="@SignInVM.UserName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ServerPassword">Password <span class="text-red">*</span></label>
+                                    <input type="password" class="form-control p_input text-white" id="ServerPassword" @bind-value="@SignInVM.Password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="captchaNumber">
+                                        Captcha <span class="text-red">*</span>
+                                        <img class="img-fluid" style="height:2.1em;width:7em;margin-left:1em" src="@CaptchaUrl" id="captchaImage" @onclick="UpdateCaptcha" />
+                                    </label>
+                                    <input type="text" name="captchaNumber" class="form-control text-white" id="captchaNumber" @bind-value="@SignInVM.Captcha">
+                                </div>
+                                <div class="form-group d-flex align-items-center justify-content-between">
+                                    <div class="form-check form-check-muted m-0">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" class="form-check-input" id="SaveLoginInfo" @bind-value="@SignInVM.Persist"> Remember me
+                                            <i class="input-helper"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                                @if (SignInVM.Status != SignInStatus.Authorized)
+                                {
+                                    <div class="alert alert-danger" role="alert">
+                                        @SignInVM.Status @SignInVM.Message
+                                    </div>
+                                }
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-primary btn-block enter-btn" @onclick="@SignInAsync">Sign In</button>
+                                </div>
+                            </form>
+
+                        }
+                        else
+                        {
+                            <form>
+                                <button type="button" class="btn btn-primary btn-block enter-btn" @onclick="@SignOutAsync">Sign Out</button>
+                            </form>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly string BaseUrl = "api/Auth";
+    public SignInViewModel SignInVM { get; set; } = new();
+    public bool DuringAuthorizationProccess { get; set; }
+    public bool? IsSignedIn { get; set; }
+    public string? CaptchaUrl { get; set; }
+
+    private void UpdateCaptcha()
+        => CaptchaUrl = $"{BaseUrl}/RequestCaptcha?timestamp=" + DateTime.Now.Ticks;
+
+    private async void SignInAsync()
+    {
+        if (DuringAuthorizationProccess)
+        {
+            return;
+        }
+        DuringAuthorizationProccess = true;
+        try
+        {
+            SignInVM = (await (await Http.PostAsJsonAsync($"{BaseUrl}/SignIn", SignInVM)).Content.ReadFromJsonAsync<SignInViewModel>())!;
+            if (SignInVM!.Status == SignInStatus.Authorized)
+            {
+                NavManager.NavigateTo("/Connect");
+            }
+            else
+            {
+                UpdateCaptcha();
+            }
+        }
+        catch (Exception ex)
+        {
+            SignInVM.Message = ex.Message;
+            SignInVM.Status = SignInStatus.Exception;
+        }
+        finally
+        {
+            DuringAuthorizationProccess = false;
+        }
+        StateHasChanged();
+    }
+
+    private async void SignOutAsync()
+    {
+        await Http.GetAsync($"{BaseUrl}/SignOut");
+        bool.TryParse(await Http.GetStringAsync($"{BaseUrl}/Authorized"), out var result);
+        IsSignedIn = result;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        CaptchaUrl = $"{BaseUrl}/RequestCaptcha";
+
+        bool.TryParse(await Http.GetStringAsync($"{BaseUrl}/Authorized"), out var result);
+
+        IsSignedIn = result;
+    }
+}

@@ -1,0 +1,241 @@
+﻿@page "/Terminal/{SessionId:guid}"
+
+@using Compus.Domain.Server;
+@using Compus.Domain.Server.Enums;
+@using Compus.Domain.Shared;
+
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime;
+
+<h3>Terminal</h3>
+
+<div class="col-md-12">
+    <div id="terminal"></div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group row">
+            <label class="col-sm-3 col-form-label">Command Mode</label>
+            <div class="col-sm-9">
+                <select class="form-control text-white" id="CommandMode" @bind="@CommandMode">
+                    <option value="0">Single Line</option>
+                    <option value="1">Multi Lines</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group row">
+            <label class="col-sm-3 col-form-label">Command Content</label>
+            <div class="col-sm-9">
+                @if (CommandMode == 0)
+                {
+                    <input type="text" class="form-control text-white" autocomplete="off" id="CommandText" @onkeydown="@OnCommandKeydown" @bind-value="@Command" @bind-value:event="oninput">
+                }
+                else
+                {
+                    <textarea id="CommandText" class="form-control text-white" @bind="@Command" @bind:event="oninput"></textarea>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="form-group  col-md-12">
+    <button type="button" class="btn btn-outline-success btn-icon-text" @onclick="@SendCommand">
+        <i class="mdi mdi-upload btn-icon-prepend"></i> Send
+    </button>
+    <button type="button" class="btn btn-outline-danger btn-icon-text" @onclick="@Clear">
+        <i class="mdi mdi-reload btn-icon-prepend"></i> Clear
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public Guid SessionId { get; set; }
+
+    public int CommandMode { get; set; }
+    public string Command { get; set; } = string.Empty;
+
+    private static Task? _fetchTerminalUpdate;
+    private static CancellationTokenSource? _cancellationTokenSource;
+
+    private readonly string _baseUrl = "/api/Terminal";
+
+    private int _currentLineIndex;
+    private int _currentOutputIndex;
+    private bool _isTerminalBlocked;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await InitializeTerminal();
+            }
+            catch (Exception ex)
+            {
+                await WriteToTerminal(ex.Message);
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task InitializeTerminal()
+    {
+        await JSRuntime.InvokeAsync<object>("StartTerm", "terminal");
+        StartNewTerminalWindow();
+
+        _currentLineIndex = TerminalUtilities.GetCurrentLineIndex(SessionId);
+
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+
+        if (_fetchTerminalUpdate != null)
+        {
+            try
+            {
+                await _fetchTerminalUpdate;
+
+            }
+            catch (TaskCanceledException)
+            {
+            }
+
+            _fetchTerminalUpdate.Dispose();
+            _fetchTerminalUpdate = null;
+        }
+
+        var isConnected = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/IsConnected?terminalId=" + SessionId);
+
+        if (isConnected!.Response)
+        {
+            StartFetchUpdate();
+        }
+        else
+        {
+            await WriteToTerminal("Not connected");
+        }
+    }
+
+    private void StartFetchUpdate()
+    {
+        _cancellationTokenSource = new System.Threading.CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        _fetchTerminalUpdate = Task.Run(async () =>
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var needGetLinesRightNow = false;
+                var response = await Http.GetFromJsonAsync<ApiResponse<TerminalContent>>($"{_baseUrl}/GetView?terminalId=" + SessionId, token);
+                if (response!.StatusResult == ResponseStatus.Success)
+                {
+                    if (!string.IsNullOrEmpty(response.Response!.Content))
+                    {
+                        await WriteToTerminal(response.Response.Content, false);
+
+                        if (response.Response.Lines == Constants.MaxinumLines)
+                        {
+                            needGetLinesRightNow = true;
+                        }
+                    }
+                }
+                else
+                {
+                    await WriteToTerminal(response.ExtraMessage!);
+
+                    if (response.StatusResult == ResponseStatus.Exception)
+                    {
+                        _cancellationTokenSource.Cancel();
+                    }
+                }
+                await Task.Delay(needGetLinesRightNow ? 100 : 1000, token);
+            }
+        }, token);
+    }
+
+    private async void SendCommand()
+    {
+        if (_isTerminalBlocked)
+        {
+            await WriteToTerminal("Terminal is blocked, please wait for previous command finished");
+            return;
+        }
+
+        _isTerminalBlocked = true;
+
+        try
+        {
+            TerminalUtilities.SaveCommand(SessionId, Command, ref _currentLineIndex);
+
+            var content = await Http.GetAsync($"{_baseUrl}/ExecuteCommand?command=" + System.Web.HttpUtility.UrlEncode(Command) + "&terminalId=" + SessionId);
+            content.EnsureSuccessStatusCode();
+            var response = await content.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+            if (response!.StatusResult != ResponseStatus.Success || !response.Response)
+            {
+                await WriteToTerminal(response.ExtraMessage!);
+            }
+        }
+        catch (Exception ex)
+        {
+            await WriteToTerminal(ex.Message);
+        }
+
+        _isTerminalBlocked = false;
+        Command = string.Empty;
+        StateHasChanged();
+    }
+
+    private async void Clear()
+    {
+        Command = string.Empty;
+        TerminalUtilities.Clear(SessionId);
+        await JSRuntime.InvokeAsync<object>("ClearTerm");
+        _currentOutputIndex = 0;
+        _currentLineIndex = 1;
+    }
+
+
+    private void OnCommandKeydown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            SendCommand();
+        }
+        else if (args.Key == "ArrowUp")
+        {
+            var result = TerminalUtilities.GetPrevCommand(SessionId, ref _currentLineIndex);
+            if (result.Successful)
+            {
+                Command = result.CommandName;
+            }
+        }
+        else if (args.Key == "ArrowDown")
+        {
+            var result = TerminalUtilities.GetNextCommand(SessionId, ref _currentLineIndex);
+            if (result.Successful)
+            {
+                Command = result.CommandName;
+            }
+        }
+    }
+
+    private async Task WriteToTerminal(string messageToWrite, bool addNewLine = true)
+    {
+        TerminalUtilities.SaveTerminalOutput(SessionId, addNewLine ? (Constants.NewLine + messageToWrite + Constants.NewLine) : messageToWrite);
+        await JSRuntime.InvokeAsync<object>("WriteToTerm", TerminalUtilities.GetTerminalOutput(SessionId, ref _currentOutputIndex));
+    }
+
+    private async void StartNewTerminalWindow()
+    {
+        await JSRuntime.InvokeAsync<object>("ClearTerm");
+        _currentOutputIndex = 0;
+        await JSRuntime.InvokeAsync<object>("WriteToTerm", TerminalUtilities.GetTerminalOutput(SessionId, ref _currentOutputIndex));
+    }
+}

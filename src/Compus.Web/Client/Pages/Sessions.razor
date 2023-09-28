@@ -1,0 +1,267 @@
+﻿@page "/Sessions"
+
+@using Compus.Domain.Client;
+@using Compus.Domain.Server;
+@using Compus.Domain.Server.Enums;
+
+@inject NavigationManager NavManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject HttpClient Http
+
+<h3>Sessions</h3>
+
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Connected Sessions</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th> Name </th>
+                            <th> Connected Date </th>
+                            <th> Terminal </th>
+                            <th> Action </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (TerminalUtilities.SessionStorage != null &&
+                        TerminalUtilities.SessionStorage.Sessions.Count > 0)
+                        {
+                            @foreach (var session in TerminalUtilities.SessionStorage.Sessions)
+                            {
+
+                                <tr>
+                                    <td>@session.Value.StoredSession!.DisplayName</td>
+                                    <td>@session.Value.StartSessionDate </td>
+                                    <td><button class="btn btn-outline-primary btn-sm" @onclick="() => OpenTerminal(session.Value)">Open</button></td>
+                                    <td><button class="btn btn-outline-danger btn-sm" @onclick="() => Disconnect(session.Value)">Disconnect</button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (!string.IsNullOrEmpty(Status))
+            {
+                <div class="card alert alert-danger col-md-12" role="alert">
+                    @Status
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Stored Sessions</h4>
+            <button class="btn btn-outline-primary btn-sm" @onclick="SaveChangesAsync">Save to Local Storage</button>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th> Name </th>
+                            <th> Host </th>
+                            <th> Port </th>
+                            <th> User </th>
+                            <th> Password </th>
+                            <th> Action </th>
+                            <th> Action </th>
+                            <th> Action </th>
+                            <th> Action </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (SessionsStorage != null && SessionsStorage.Sessions.Count > 0)
+                        {
+                            @foreach (var storedSession in SessionsStorage.Sessions)
+                            {
+                                <tr>
+                                    <td>@storedSession.DisplayName</td>
+                                    <td>@storedSession.Host</td>
+                                    <td>@storedSession.Port</td>
+                                    <td>@storedSession.UserName</td>
+                                    <td>@(string.IsNullOrEmpty(storedSession.Password) ? string.Empty : "**********")</td>
+                                    <td><button class="btn btn-outline-primary btn-sm" @onclick="() => OpenConnect(storedSession)">Connect</button></td>
+                                    <td><button class="btn btn-outline-info btn-sm" @onclick="u => EditStoredSession(storedSession)">Edit</button></td>
+                                    <td><button class="btn btn-outline-warning btn-sm" @onclick="u => CopySession(storedSession)">Copy</button></td>
+                                    <td><button class="btn btn-outline-danger btn-sm" @onclick="u => DeleteStoredSession(storedSession)">Delete</button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Edit Session</h4>
+            <div class="form-group">
+                <label for="DisplayName">Session Name</label>
+                <input type="text" class="form-control text-white" id="DisplayName" autocomplete="off" @bind-value="@StoredSession.DisplayName">
+            </div>
+            <div class="form-group">
+                <label for="RemoteHost">Host</label>
+                <input type="text" class="form-control text-white" id="RemoteHost" autocomplete="off" @bind-value="@StoredSession.Host">
+            </div>
+            <div class="form-group">
+                <label for="Port">Port</label>
+                <input type="number" class="form-control text-white" id="Port" autocomplete="off" @bind-value="@StoredSession.Port">
+            </div>
+            <div class="form-group">
+                <label for="ServerUserName">User</label>
+                <input type="text" class="form-control text-white" id="ServerUserName" autocomplete="off" @bind-value="@StoredSession.UserName">
+            </div>
+            <div class="form-group">
+                <label for="ServerPassword">Password</label>
+                <input type="password" class="form-control text-white" id="ServerPassword" autocomplete="new-password" @bind-value="@StoredSession.DecryptedPassword">
+                <small id="PasswordHelp" class="form-text text-muted">The password will saved as base64 encoding on your local browser</small>
+            </div>
+            <button type="submit" class="btn btn-outline-primary mr-2" @onclick="SaveConnectionAsync">Save Session Info</button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    public string? Status { get; set; }
+
+    public ExternalStoredSession StoredSession { get; set; } = new();
+
+    public ExternalStoredSessionStorage? SessionsStorage { get; set; }
+
+    private readonly string _baseUrl = "/api/Terminal";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SessionsStorage = await LocalStorage.GetItemAsync<ExternalStoredSessionStorage>(nameof(ExternalStoredSessionStorage));
+
+        if (SessionsStorage == null)
+        {
+            SessionsStorage = new ExternalStoredSessionStorage();
+        }
+
+        try
+        {
+            await UpdateSessionStorage();
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                NavManager.NavigateTo("/Auth");
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = ex.Message;
+        }
+    }
+
+    private async Task UpdateSessionStorage()
+    {
+        var response = await Http.GetFromJsonAsync<ApiResponse<List<ExternalActiveSession>>>($"{_baseUrl}/GetAllConnectedSessions");
+
+        if (response!.StatusResult == ResponseStatus.Success)
+        {
+            TerminalUtilities.SessionStorage.RemoveActiveSessions();
+
+            foreach (var activeSession in response.Response!)
+            {
+                TerminalUtilities.SessionStorage.AddActiveSession(activeSession);
+            }
+
+            return;
+        }
+        Status = response.ExtraMessage;
+    }
+
+    private async void SaveConnectionAsync()
+    {
+        SessionsStorage!.RenewStoredSession(StoredSession);
+        StoredSession = new ExternalStoredSession();
+        await LocalStorage.SetItemAsync<ExternalStoredSessionStorage>(
+            nameof(ExternalStoredSessionStorage),
+            SessionsStorage);
+    }
+
+    private void EditStoredSession(ExternalStoredSession session)
+        => StoredSession = session;
+
+    private async void SaveChangesAsync()
+        => await LocalStorage.SetItemAsync<ExternalStoredSessionStorage>(
+            nameof(ExternalStoredSessionStorage),
+            SessionsStorage!);
+
+    private async void DeleteStoredSession(ExternalStoredSession session)
+    {
+        SessionsStorage!.RemoveStoredSession(session.ConnectionId);
+        await LocalStorage.SetItemAsync<ExternalStoredSessionStorage>(
+            nameof(ExternalStoredSessionStorage),
+            SessionsStorage!);
+    }
+
+    private void OpenConnect(ExternalStoredSession session)
+    {
+        TerminalUtilities.StoredSession = session.Clone();
+        NavManager.NavigateTo("/Connect");
+    }
+
+    private void CopySession(ExternalStoredSession session)
+    {
+        StoredSession = session.Clone(false);
+        StoredSession.DisplayName = StoredSession.DisplayName + "_Copy";
+        SessionsStorage!.RenewStoredSession(StoredSession);
+    }
+
+    private async void OpenTerminal(ExternalActiveSession session)
+    {
+        Status = null;
+
+        try
+        {
+            var isConnected = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/IsConnected?terminalId=" + session.ConnectionId);
+            if (isConnected!.StatusResult == ResponseStatus.Success && isConnected.Response)
+            {
+                NavManager.NavigateTo("/Terminal/" + session.ConnectionId);
+            }
+            else
+            {
+                TerminalUtilities.SessionStorage.RemoveActiveSession(session.ConnectionId);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private async void Disconnect(ExternalActiveSession session)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<ApiResponse<bool>>($"{_baseUrl}/Disconnect?terminalId=" + session.ConnectionId);
+            if (response!.StatusResult == ResponseStatus.Success && response.Response)
+            {
+                TerminalUtilities.SessionStorage.RemoveActiveSession(session.ConnectionId);
+            }
+            else
+            {
+                Status = response.ExtraMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = ex.Message;
+        }
+
+        StateHasChanged();
+    }
+}
