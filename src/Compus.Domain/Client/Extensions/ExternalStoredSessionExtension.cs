@@ -2,9 +2,17 @@
 
 namespace Compus.Domain.Client.Extensions;
 
+/// <summary>
+/// ExternalStoredSession
+/// </summary>
 internal static class ExternalStoredSessionExtension
 {
-    internal static string EncodePassword(this ExternalStoredSession session)
+    /// <summary>
+    /// Convert from base64 to string
+    /// </summary>
+    /// <param name="session">Session with password for decode</param>
+    /// <returns>Decoded string or string.Empty if any errors occurred</returns>
+    internal static string DecodePassword(this ExternalStoredSession session)
     {
         try
         {
@@ -21,7 +29,13 @@ internal static class ExternalStoredSessionExtension
         return string.Empty;
     }
 
-    internal static string DecodePassword(this ExternalStoredSession session, string? value)
+    /// <summary>
+    /// Convert from string to base64
+    /// </summary>
+    /// <param name="session">Session with password for encode</param>
+    /// <param name="value">Password for encode</param>
+    /// <returns>Encoded string or string.Empty if any errors occurred</returns>
+    internal static string EncodePassword(this ExternalStoredSession session, string? value)
     {
         try
         {

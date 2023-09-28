@@ -9,7 +9,7 @@ public class AuthService : IAuthService
 {
     private readonly ServerConfig _cfg;
     private readonly IHttpContextWrapper _httpContextWrapper;
-    public bool Authorized => _httpContextWrapper.IsAuthenticated();
+    public bool Authorized => _httpContextWrapper.IsAuthorized();
 
     public AuthService(IHttpContextWrapper httpContextWrapper, ServerConfig cfg)
         => (_cfg, _httpContextWrapper) = (cfg, httpContextWrapper);
@@ -24,6 +24,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> SignInAsync(string username, string password, bool persist)
     {
+        // skip auth if EnableAuthorization is false
         var user = _cfg.Users!.FirstOrDefault(
             u => !_cfg.EnableAuthorization ||
             (u.UserName == username && u.Password == password));
